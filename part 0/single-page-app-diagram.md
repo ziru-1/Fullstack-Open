@@ -5,10 +5,24 @@ sequenceDiagram
 
     note right of browser: I think what happens on load for the spa and not spa version is the same
 
-    browser->>browser: creates new notes object with note content and date, updates the DOM with that data
-    browser->>server: sends POST request to /note_note_spa server address
+    browser->>server: GET request for address /notes
     activate server
-    server-->>browser: returns status code 201 with no additional redirects and GET requests
+    server-->>browser: returns HTML document
+    deactivate server
+
+    browser->>server: GET request for the CSS
+    activate server
+    server-->>browser: returns the css file
+    deactivate server
+
+    browser->>server: GET request for the JS file
+    activate server
+    server-->>browser: returns the js file
+    deactivate server
+
+    browser->>server: GET request for the notes data
+    activate server
+    server-->>browser: returns the notes data as json
     deactivate server
 
 ```
