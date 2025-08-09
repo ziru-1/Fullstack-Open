@@ -14,22 +14,29 @@ const Statistics = ({ good, neutral, bad }) => {
       {isNoFeedback ? (
         <p>No feedback given</p>
       ) : (
-        <>
-          <StatisticLine text="good" statistic={good}/>
-          <StatisticLine text="neutral" statistic={neutral}/>
-          <StatisticLine text="bad" statistic={bad}/>
-          <StatisticLine text="all" statistic={total}/>
-          <StatisticLine text="average" statistic={average}/>
-          <StatisticLine text="positive" statistic={positive}/>
-        </>
+        <table>
+          <tbody>
+            <StatisticLine text="good" statistic={good} />
+            <StatisticLine text="neutral" statistic={neutral} />
+            <StatisticLine text="bad" statistic={bad} />
+            <StatisticLine text="all" statistic={total} />
+            <StatisticLine text="average" statistic={average} />
+            <StatisticLine text="positive" statistic={positive} />
+          </tbody>
+        </table>
       )}
     </>
   );
 };
 
-const StatisticLine = ({text, statistic}) => {
+const StatisticLine = ({ text, statistic }) => {
   return (
-    <p>{text} {statistic}{text === "positive" && "%"}</p>
+    <tr>
+      <td>
+        {text}
+      </td>
+      <td> {statistic}{text === "positive" && "%"}</td>
+    </tr>
   );
 };
 
