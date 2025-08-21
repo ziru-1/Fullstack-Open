@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import personService from "./services/persons";
 
 const Filter = ({ filter, handleFilterChange }) => {
   return (
@@ -34,21 +35,34 @@ const PersonForm = ({
   );
 };
 
-const Numbers = ({ filter, filteredItems, persons }) => {
+const Numbers = ({ filter, filteredItems, persons, handlePersonDelete }) => {
   return (
     <>
       {filter
         ? filteredItems.map((person) => (
-            <p key={person.name}>
-              {person.name} {person.number}
-            </p>
+            <Number
+              key={person.id}
+              person={person}
+              handlePersonDelete={handlePersonDelete}
+            />
           ))
         : persons.map((person) => (
-            <p key={person.name}>
-              {person.name} {person.number}
-            </p>
+            <Number
+              key={person.id}
+              person={person}
+              handlePersonDelete={handlePersonDelete}
+            />
           ))}
     </>
+  );
+};
+
+const Number = ({ person, handlePersonDelete }) => {
+  return (
+    <p>
+      {person.name} {person.number}{" "}
+      <button onClick={() => handlePersonDelete(person)}>Delete</button>
+    </p>
   );
 };
 
@@ -60,9 +74,9 @@ const App = () => {
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/persons")
-      .then((response) => setPersons(response.data));
+    personService
+      .getPersons()
+      .then((initialPersons) => setPersons(initialPersons));
   }, []);
 
   const handleNameChange = (e) => {
@@ -86,19 +100,46 @@ const App = () => {
   const handleNameSubmit = (e) => {
     e.preventDefault();
 
-    if (persons.some((person) => person.name === newName)) {
-      alert(`${newName} has already been added`);
+    const matchedPerson = persons.find((person) => person.name === newName);
+
+    if (
+      matchedPerson &&
+      confirm(
+        `${newName} has already been added, replace the old number with a new one?`
+      )
+    ) {
+      const personObject = { ...matchedPerson, number: newPhoneNumber };
+      personService
+        .updatePerson(matchedPerson.id, personObject)
+        .then((updatedPerson) => {
+          setPersons(
+            persons.map((person) =>
+              person.id === updatedPerson.id ? updatedPerson : person
+            )
+          );
+        });
+
       return;
     }
 
     const nameObject = {
       name: newName,
-      phoneNumber: newPhoneNumber,
+      number: newPhoneNumber,
     };
 
-    setPersons(persons.concat(nameObject));
+    personService.addPerson(nameObject).then((newPerson) => {
+      setPersons(persons.concat(newPerson));
+    });
+
     setNewName("");
     setNewPhoneNumber("");
+  };
+
+  const handlePersonDelete = (person) => {
+    confirm(`Delete ${person.name}?`) &&
+      personService.deletePerson(person.id).then((deletedPerson) => {
+        setPersons(persons.filter((person) => person.id !== deletedPerson.id));
+      });
   };
 
   return (
@@ -118,6 +159,7 @@ const App = () => {
         filter={filter}
         filteredItems={filteredItems}
         persons={persons}
+        handlePersonDelete={handlePersonDelete}
       />
     </div>
   );
