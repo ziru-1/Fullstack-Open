@@ -66,12 +66,41 @@ const Number = ({ person, handlePersonDelete }) => {
   );
 };
 
+const Notification = ({ message }) => {
+  const success = {
+    color: "green",
+    background: "lightgrey",
+    fontSize: "20px",
+    borderStyle: "solid",
+    borderRadius: "5px",
+    padding: "10px",
+    marginBottom: "10px",
+  };
+
+  const error = {
+    color: "red",
+    background: "lightgrey",
+    fontSize: "20px",
+    borderStyle: "solid",
+    borderRadius: "5px",
+    padding: "10px",
+    marginBottom: "10px",
+  };
+
+  if (message === null) {
+    return null;
+  }
+
+  return <div style={success}>{message}</div>;
+};
+
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [newName, setNewName] = useState("");
   const [newPhoneNumber, setNewPhoneNumber] = useState("");
   const [filter, setFilter] = useState("");
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     personService
@@ -117,6 +146,12 @@ const App = () => {
               person.id === updatedPerson.id ? updatedPerson : person
             )
           );
+          setSuccessMessage(
+            `Updated ${updatedPerson.name}'s number to ${updatedPerson.number}`
+          );
+          setTimeout(() => {
+            setSuccessMessage(null);
+          }, 5000);
         });
 
       return;
@@ -129,6 +164,10 @@ const App = () => {
 
     personService.addPerson(nameObject).then((newPerson) => {
       setPersons(persons.concat(newPerson));
+      setSuccessMessage(`Added ${newPerson.name}`);
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
     });
 
     setNewName("");
@@ -145,6 +184,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={successMessage} />
       <Filter filter={filter} handleFilterChange={handleFilterChange} />
       <h2>add a new</h2>
       <PersonForm
