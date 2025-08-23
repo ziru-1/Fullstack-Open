@@ -87,11 +87,15 @@ const Notification = ({ message }) => {
     marginBottom: "10px",
   };
 
-  if (message === null) {
+  if (message.message === null) {
     return null;
   }
 
-  return <div style={success}>{message}</div>;
+  return (
+    <div style={message.type === "success" ? success : error}>
+      {message.message}
+    </div>
+  );
 };
 
 const App = () => {
@@ -100,7 +104,10 @@ const App = () => {
   const [newName, setNewName] = useState("");
   const [newPhoneNumber, setNewPhoneNumber] = useState("");
   const [filter, setFilter] = useState("");
-  const [successMessage, setSuccessMessage] = useState(null);
+  const [message, setMessage] = useState({
+    message: null,
+    type: null,
+  });
 
   useEffect(() => {
     personService
@@ -146,12 +153,23 @@ const App = () => {
               person.id === updatedPerson.id ? updatedPerson : person
             )
           );
-          setSuccessMessage(
-            `Updated ${updatedPerson.name}'s number to ${updatedPerson.number}`
-          );
+          setMessage({
+            message: `Updated ${updatedPerson.name}'s number to ${updatedPerson.number}`,
+            type: "success",
+          });
           setTimeout(() => {
-            setSuccessMessage(null);
+            setMessage({
+              message: null,
+              type: null,
+            });
           }, 5000);
+        })
+        .catch((error) => {
+          setMessage({
+            message: `Information of ${personObject.name} has already been remove from the server`,
+            type: "error",
+          });
+          setPersons(persons.filter((person) => person.id !== personObject.id));
         });
 
       return;
@@ -164,9 +182,12 @@ const App = () => {
 
     personService.addPerson(nameObject).then((newPerson) => {
       setPersons(persons.concat(newPerson));
-      setSuccessMessage(`Added ${newPerson.name}`);
+      setMessage({ message: `Added ${newPerson.name}`, type: "success" });
       setTimeout(() => {
-        setSuccessMessage(null);
+        setMessage({
+          message: null,
+          type: null,
+        });
       }, 5000);
     });
 
@@ -184,7 +205,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification message={successMessage} />
+      <Notification message={message} />
       <Filter filter={filter} handleFilterChange={handleFilterChange} />
       <h2>add a new</h2>
       <PersonForm
