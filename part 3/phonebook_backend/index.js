@@ -1,7 +1,13 @@
 const express = require("express");
+const morgan = require("morgan");
 const app = express();
 
+morgan.token('body', (req, res) => {
+  return JSON.stringify(req.body)
+})
+
 app.use(express.json());
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 let persons = [
   {
@@ -49,14 +55,14 @@ app.post("/api/persons", (request, response) => {
   const newPersonId = String(Math.floor(Math.random() * 10000));
   const body = request.body;
 
-  if(!body.name || !body.number) {
+  if (!body.name || !body.number) {
     return response.status(400).json({
-        error: 'name or number is missing'
-    })
-  } else if (persons.find(person => person.name === body.name)){
+      error: "name or number is missing",
+    });
+  } else if (persons.find((person) => person.name === body.name)) {
     return response.status(400).json({
-        error: 'name already exists'
-    })
+      error: "name already exists",
+    });
   }
 
   const newPerson = {
