@@ -198,7 +198,15 @@ const App = () => {
   const handlePersonDelete = (person) => {
     confirm(`Delete ${person.name}?`) &&
       personService.deletePerson(person.id).then((deletedPerson) => {
+        console.log(persons.filter((person) => person.id !== deletedPerson.id));
         setPersons(persons.filter((person) => person.id !== deletedPerson.id));
+        setMessage({ message: `Deleted ${deletedPerson.name}`, type: "success" });
+        setTimeout(() => {
+          setMessage({
+            message: null,
+            type: null,
+          });
+        }, 5000);
       });
   };
 
