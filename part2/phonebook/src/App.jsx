@@ -21,11 +21,11 @@ const PersonForm = ({
     <form onSubmit={handleNameSubmit}>
       <div>
         <div>
-          name: <input value={newName} onChange={handleNameChange} />
+          name: <input value={newName} onChange={handleNameChange} placeholder="John Doe" />
         </div>
         <div>
           number:{" "}
-          <input value={newPhoneNumber} onChange={handlePhoneNumberChange} />
+          <input value={newPhoneNumber} onChange={handlePhoneNumberChange} placeholder="123-12345"/>
         </div>
       </div>
       <div>
@@ -180,16 +180,27 @@ const App = () => {
       number: newPhoneNumber,
     };
 
-    personService.addPerson(nameObject).then((newPerson) => {
-      setPersons(persons.concat(newPerson));
-      setMessage({ message: `Added ${newPerson.name}`, type: "success" });
-      setTimeout(() => {
-        setMessage({
-          message: null,
-          type: null,
-        });
-      }, 5000);
-    });
+    personService
+      .addPerson(nameObject)
+      .then((newPerson) => {
+        setPersons(persons.concat(newPerson));
+        setMessage({ message: `Added ${newPerson.name}`, type: "success" });
+        setTimeout(() => {
+          setMessage({
+            message: null,
+            type: null,
+          });
+        }, 5000);
+      })
+      .catch((error) => {
+        setMessage({ message: error.response.data.error, type: "error" });
+        setTimeout(() => {
+          setMessage({
+            message: null,
+            type: null,
+          });
+        }, 5000);
+      });
 
     setNewName("");
     setNewPhoneNumber("");
@@ -200,7 +211,10 @@ const App = () => {
       personService.deletePerson(person.id).then((deletedPerson) => {
         console.log(persons.filter((person) => person.id !== deletedPerson.id));
         setPersons(persons.filter((person) => person.id !== deletedPerson.id));
-        setMessage({ message: `Deleted ${deletedPerson.name}`, type: "success" });
+        setMessage({
+          message: `Deleted ${deletedPerson.name}`,
+          type: "success",
+        });
         setTimeout(() => {
           setMessage({
             message: null,
