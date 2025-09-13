@@ -77,6 +77,39 @@ test('responds bad request if no title nor url properties', async () => {
   await api.post('/api/blogs').send(newBlog).expect(400)
 })
 
+test('delete a blog', async () => {
+  const blogsAtStart = await helper.blogsInDB()
+  const blogToDelete = blogsAtStart[0]
+
+  await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+
+  const blogsAtEnd = await helper.blogsInDB()
+
+  assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
+})
+
+test('update a blog', async () => {
+  const blogsAtStart = await helper.blogsInDB()
+  const blogToUpdate = blogsAtStart[0]
+
+  const updatedBlog = {
+    ...blogToUpdate,
+    title: 'Updated Title',
+  }
+
+  const response = await api
+    .put(`/api/blogs/${blogToUpdate.id}`)
+    .send(updatedBlog)
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
+
+  assert.strictEqual(response.body.title, 'Updated Title')
+
+  const blogsAtEnd = await helper.blogsInDB()
+  const updated = blogsAtEnd.find((b) => b.id === blogToUpdate.id)
+  assert.strictEqual(updated.title, 'Updated Title')
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
