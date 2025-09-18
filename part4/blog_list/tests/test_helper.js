@@ -20,14 +20,12 @@ const initialUsers = [
   {
     username: 'Admin',
     name: 'Admin',
-    passwordHash: 'test',
-    blogs: [],
+    password: 'test',
   },
   {
     username: 'Test 1',
     name: 'Test 2',
-    passwordHash: 'test',
-    blogs: [],
+    password: 'test',
   }
 ]
 

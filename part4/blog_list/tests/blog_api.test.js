@@ -5,12 +5,18 @@ const mongoose = require('mongoose')
 const app = require('../app')
 const helper = require('./test_helper')
 const Blog = require('../models/blogModel')
+const User = require('../models/userModel')
 
 const api = supertest(app)
 
 beforeEach(async () => {
   await Blog.deleteMany({})
   await Blog.insertMany(helper.initialBlogs)
+  
+  await User.deleteMany({})
+  for (let user of helper.initialUsers) {
+    await api.post('/api/user').send(user)
+  }
 })
 
 test('is unique identifier an id', async () => {
@@ -26,7 +32,7 @@ test('retrieve all blogs', async () => {
   assert.strictEqual(response.body.length, helper.initialBlogs.length)
 })
 
-test('create a new blog', async () => {
+test('create a new blog with valid token', async () => {
   const newBlog = {
     title: 'Test Blog',
     author: 'Test E. Kels',
@@ -34,8 +40,20 @@ test('create a new blog', async () => {
     likes: 5,
   }
 
+  const userLogin = {
+    username: 'Admin',
+    password: 'test',
+  }
+
+  const user = await api
+    .post('/api/login')
+    .send(userLogin)
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
+
   await api
     .post('/api/blogs')
+    .set('Authorization', `Bearer ${user.body.token}`)
     .send(newBlog)
     .expect(201)
     .expect('Content-Type', /application\/json/)
@@ -52,6 +70,25 @@ test('create a new blog', async () => {
         blog.likes === 5
     )
   )
+})
+
+test('create a new blog with wrong user', async () => {
+  const newBlog = {
+    title: 'Test Blog',
+    author: 'Test E. Kels',
+    url: 'test.com',
+    likes: 5,
+  }
+
+  await api
+    .post('/api/blogs')
+    .set('Authorization', `Bearer `)
+    .send(newBlog)
+    .expect(401)
+    .expect('Content-Type', /application\/json/)
+
+  const blogs = await helper.blogsInDB()
+  assert.strictEqual(blogs.length, helper.initialBlogs.length)
 })
 
 test('default likes to 0 if missing', async () => {
