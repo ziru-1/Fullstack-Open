@@ -18,7 +18,7 @@ app.use(middleware.requestLogger)
 app.use(middleware.tokenExtractor)
 
 app.use('/api/blogs', blogRouter)
-app.use('/api/user', userRouter)
+app.use('/api/users', userRouter)
 app.use('/api/login', loginRouter)
 
 app.use(middleware.errorHandler)
