@@ -14,7 +14,10 @@ const App = () => {
   const [notification, setNotification] = useState({ message: null });
 
   useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs));
+    blogService.getAll().then((blogs) => {
+      const sortedBlogs = [...blogs].sort((a, b) => b.likes - a.likes);
+      setBlogs(sortedBlogs);
+    });
   }, []);
 
   useEffect(() => {
@@ -54,12 +57,25 @@ const App = () => {
   const handleAddBlog = async (blogDetails) => {
     try {
       const addedBlog = await blogService.addBlog(blogDetails, user.token);
-
       setBlogs((prevBlogs) => [...prevBlogs, addedBlog]);
       notifyWith(`a new blog: ${addedBlog.title} by ${addedBlog.author} added`);
     } catch {
       notifyWith('title and url required', true);
     }
+  };
+
+  const handleLikeUpdate = async (blog) => {
+    const updatedBlog = await blogService.updateBlogLike(blog.id, blog.likes);
+    setBlogs((prevBlogs) =>
+      prevBlogs.map((blog) => (blog.id === updatedBlog.id ? updatedBlog : blog))
+    );
+  };
+
+  const handleDeleteBlog = async (id) => {
+    await blogService.deleteBlog(id, user.token);
+    setBlogs((prevBlogs) =>
+      prevBlogs.filter((blog) => blog.id !== id)
+    );
   };
 
   const loginForm = () => {
@@ -110,7 +126,13 @@ const App = () => {
             <BlogForm handleAddBlog={handleAddBlog} />
           </Togglable>
           {blogs.map((blog) => (
-            <Blog key={blog.id} blog={blog} />
+            <Blog
+              key={blog.id}
+              blog={blog}
+              user={user}
+              handleLikeUpdate={handleLikeUpdate}
+              handleDeleteBlog={handleDeleteBlog}
+            />
           ))}
         </div>
       )}

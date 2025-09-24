@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const Blog = ({ blog }) => {
+const Blog = ({ blog, user, handleLikeUpdate, handleDeleteBlog }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
 
   const blogStyle = {
@@ -11,6 +11,19 @@ const Blog = ({ blog }) => {
     marginBottom: 2,
   };
 
+  const handleLikeButtonClick = () => {
+    handleLikeUpdate(blog);
+  };
+
+  const handleDeleteButtonClick = () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this blog?'
+    );
+    if (!confirmed) return;
+
+    handleDeleteBlog(blog.id);
+  };
+
   const toggleShowDetails = () => {
     setIsShowDetails(!isShowDetails);
   };
@@ -18,18 +31,23 @@ const Blog = ({ blog }) => {
   return (
     <div style={blogStyle}>
       <p>
-        {blog.title}{' '}
+        Title: {blog.title}{' '}
         <button onClick={toggleShowDetails}>
           {isShowDetails ? 'hide' : 'view'}
         </button>
       </p>
       {isShowDetails && (
         <>
-          <p>{blog.url}</p>
+          <p>Url: {blog.url}</p>
           <p>
-            {blog.likes} <button>like</button>
+            Likes: {blog.likes}{' '}
+            <button onClick={handleLikeButtonClick}>like</button>
           </p>
-          <p>{blog.author}</p>
+          <p>Author: {blog.author}</p>
+          <p>User: {blog.user ? blog.user.name : 'No user'}</p>
+          {user.username === blog.user.username && (
+            <button onClick={handleDeleteButtonClick}>remove</button>
+          )}
         </>
       )}
     </div>
