@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState } from 'react'
 
 const Blog = ({ blog, user, handleLikeUpdate, handleDeleteBlog }) => {
-  const [isShowDetails, setIsShowDetails] = useState(false);
+  const [isShowDetails, setIsShowDetails] = useState(false)
 
   const blogStyle = {
     paddingTop: 5,
@@ -9,24 +9,24 @@ const Blog = ({ blog, user, handleLikeUpdate, handleDeleteBlog }) => {
     border: 'solid',
     borderWidth: 1,
     marginBottom: 2,
-  };
+  }
 
   const handleLikeButtonClick = () => {
-    handleLikeUpdate(blog);
-  };
+    handleLikeUpdate(blog)
+  }
 
   const handleDeleteButtonClick = () => {
     const confirmed = window.confirm(
       'Are you sure you want to delete this blog?'
-    );
-    if (!confirmed) return;
+    )
+    if (!confirmed) return
 
-    handleDeleteBlog(blog.id);
-  };
+    handleDeleteBlog(blog.id)
+  }
 
   const toggleShowDetails = () => {
-    setIsShowDetails(!isShowDetails);
-  };
+    setIsShowDetails(!isShowDetails)
+  }
 
   return (
     <div style={blogStyle}>
@@ -51,7 +51,7 @@ const Blog = ({ blog, user, handleLikeUpdate, handleDeleteBlog }) => {
         </>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Blog;
+export default Blog

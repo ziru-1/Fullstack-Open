@@ -1,18 +1,18 @@
-import { useState } from 'react';
+import { useState } from 'react'
 
 const BlogForm = ({ handleAddBlog }) => {
-  const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
-  const [url, setUrl] = useState('');
+  const [title, setTitle] = useState('')
+  const [author, setAuthor] = useState('')
+  const [url, setUrl] = useState('')
 
   const handleBlogFormSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    handleAddBlog({ title, author, url });
-    setAuthor('');
-    setTitle('');
-    setUrl('');
-  };
+    handleAddBlog({ title, author, url })
+    setAuthor('')
+    setTitle('')
+    setUrl('')
+  }
 
   return (
     <div>
@@ -54,7 +54,7 @@ const BlogForm = ({ handleAddBlog }) => {
         </button>
       </form>
     </div>
-  );
-};
+  )
+}
 
-export default BlogForm;
+export default BlogForm

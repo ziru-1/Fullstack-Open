@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState } from 'react'
 
 const Togglable = ({ buttonName, children }) => {
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(false)
 
   const toggleVisiblity = () => {
-    setVisible(!visible);
-  };
+    setVisible(!visible)
+  }
 
   return (
     <div>
@@ -14,7 +14,7 @@ const Togglable = ({ buttonName, children }) => {
         {visible ? 'cancel' : buttonName}
       </button>
     </div>
-  );
-};
+  )
+}
 
-export default Togglable;
+export default Togglable
