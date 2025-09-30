@@ -2,16 +2,29 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Blog from './Blog'
 
-test('renders blog title but not author, url and likes', () => {
+let handleLikeUpdate
+
+beforeEach(() => {
   const blog = {
     title: 'Title',
     author: 'D Molt',
     url: 'h.com',
     likes: 0,
+    user: {
+      username: 'bob',
+    },
   }
 
-  render(<Blog blog={blog} />)
+  const user = {
+    username: 'bob',
+  }
 
+  handleLikeUpdate = vi.fn()
+
+  render(<Blog blog={blog} user={user} handleLikeUpdate={handleLikeUpdate}/>)
+})
+
+test('renders blog title but not author, url and likes', () => {
   const title = screen.getByText('Title', { exact: false })
   const author = screen.queryByText('D Molt', { exact: false })
   const url = screen.queryByText('h.com', { exact: false })
@@ -24,22 +37,6 @@ test('renders blog title but not author, url and likes', () => {
 })
 
 test('renders author, url and likes after view button click', async () => {
-  const blog = {
-    title: 'Title',
-    author: 'D Molt',
-    url: 'h.com',
-    likes: 0,
-    user: {
-      username: 'bob',
-    },
-  }
-
-  const user = {
-    username: 'bob'
-  }
-
-  render(<Blog blog={blog} user={user}/>)
-
   const userEv = userEvent.setup()
   const button = screen.getByText('view')
   await userEv.click(button)
@@ -51,4 +48,16 @@ test('renders author, url and likes after view button click', async () => {
   expect(author).toBeDefined()
   expect(url).toBeDefined()
   expect(likes).toBeDefined()
+})
+
+test('click like button twice works', async () => {
+  const userEv = userEvent.setup()
+  const viewButton = screen.getByText('view')
+  await userEv.click(viewButton)
+
+  const likeButton = screen.getByText('like')
+  await userEv.click(likeButton)
+  await userEv.click(likeButton)
+
+  expect(handleLikeUpdate.mock.calls).toHaveLength(2)
 })
