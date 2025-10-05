@@ -95,3 +95,89 @@ describe('Blog app', () => {
     })
   })
 })
+
+test('shows mocked blogs with different like counts', async ({
+  page,
+  request,
+}) => {
+  await request.post('/api/test/reset')
+  await request.post('/api/users', {
+    data: {
+      username: 'admin',
+      name: 'admin',
+      password: 'admin123',
+    },
+  })
+
+  const mockBlogs = [
+    {
+      title: 'blogAAA',
+      author: 'asd',
+      url: 'asd',
+      likes: 0,
+      user: {
+        username: 'admin',
+        name: 'admin',
+        id: '68e25e50a7ff3c5e8fdce8f5',
+      },
+      id: '68e25f29a7ff3c5e8fdce902',
+    },
+    {
+      title: 'blogBBB',
+      author: 'dd',
+      url: 'ddd',
+      likes: 3,
+      user: {
+        username: 'admin',
+        name: 'admin',
+        id: '68e25e50a7ff3c5e8fdce8f5',
+      },
+      id: '68e25f2da7ff3c5e8fdce907',
+    },
+    {
+      title: 'blogCCC',
+      author: 'fff',
+      url: 'fff',
+      likes: 9,
+      user: {
+        username: 'admin',
+        name: 'admin',
+        id: '68e25e50a7ff3c5e8fdce8f5',
+      },
+      id: '68e25f30a7ff3c5e8fdce90c',
+    },
+  ]
+
+  await page.route('/api/blogs', async (route) => {
+    console.log('Intercepting /api/blogs')
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(mockBlogs),
+    })
+  })
+
+  await page.goto('/')
+  await loginUser(page, 'admin', 'admin123')
+
+  await page.waitForSelector('div[style*="border"]')
+
+  const blogs = page.locator('div[style*="border"]')
+  const count = await blogs.count()
+
+  const likesArray = []
+
+  for (let i = 0; i < count; i++) {
+    const blog = blogs.nth(i)
+    const viewButton = blog.getByRole('button', { name: 'view' })
+    await viewButton.click()
+
+    const likesText = await blog.textContent()
+    const match = likesText.match(/Likes:\s*(\d+)/)
+    likesArray.push(match ? Number(match[1]) : 0)
+  }
+
+  for (let i = 0; i < likesArray.length - 1; i++) {
+    expect(likesArray[i]).toBeGreaterThanOrEqual(likesArray[i + 1])
+  }
+})
