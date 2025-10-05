@@ -75,6 +75,23 @@ describe('Blog app', () => {
           'rgb(0, 128, 0)'
         )
       })
+
+      test('other user cant see remove button', async ({ page, request }) => {
+        await request.post('/api/users', {
+          data: {
+            username: 'newuser',
+            name: 'New User',
+            password: 'newuser123',
+          },
+        })
+
+        await page.getByRole('button', { name: 'logout' }).click()
+
+        await loginUser(page, 'newuser', 'newuser123')
+
+        await page.getByRole('button', { name: 'view' }).click()
+        expect(page.getByRole('button', { name: 'remove' })).not.toBeVisible()
+      })
     })
   })
 })
