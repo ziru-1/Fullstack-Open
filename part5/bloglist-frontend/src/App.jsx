@@ -72,10 +72,12 @@ const App = () => {
   }
 
   const handleDeleteBlog = async (id) => {
+    const deletedBlog = blogs.find((blog) => blog.id === id)
     await blogService.deleteBlog(id, user.token)
     setBlogs((prevBlogs) =>
       prevBlogs.filter((blog) => blog.id !== id)
     )
+    notifyWith(`${deletedBlog.title} has been deleted`)
   }
 
   const loginForm = () => {

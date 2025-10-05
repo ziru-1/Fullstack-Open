@@ -1,4 +1,5 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
+const { loginUser, createBlog } = require('./helper')
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
@@ -22,17 +23,13 @@ describe('Blog app', () => {
 
   describe('Login', () => {
     test('succeeds with correct credentials', async ({ page }) => {
-      await page.getByLabel('username:').fill('admin')
-      await page.getByLabel('password:').fill('admin123')
-      await page.getByRole('button', { name: 'Login' }).click()
+      await loginUser(page, 'admin', 'admin123')
 
       await expect(page.getByText('admin has logged in')).toBeVisible()
     })
 
     test('fails with wrong credentials', async ({ page }) => {
-      await page.getByLabel('username:').fill('admin')
-      await page.getByLabel('password:').fill('wrong')
-      await page.getByRole('button', { name: 'Login' }).click()
+      await loginUser(page, 'admin', 'wrong')
 
       await expect(page.getByText('admin has logged in')).not.toBeVisible()
     })
@@ -40,19 +37,11 @@ describe('Blog app', () => {
 
   describe('when logged in', () => {
     beforeEach(async ({ page }) => {
-      await page.getByLabel('username:').fill('admin')
-      await page.getByLabel('password:').fill('admin123')
-      await page.getByRole('button', { name: 'Login' }).click()
+      await loginUser(page, 'admin', 'admin123')
     })
 
     test('user can create a blog', async ({ page }) => {
-      await page.getByRole('button', { name: 'Create new blog' }).click()
-
-      await page.getByLabel('title:').fill('New blog')
-      await page.getByLabel('author:').fill('New author')
-      await page.getByLabel('url:').fill('New-url.com')
-
-      await page.getByRole('button', { name: 'Add blog' }).click()
+      await createBlog(page, 'New blog', 'New Author', 'new-blog.com')
 
       await expect(page.getByText('Title: New blog')).toBeVisible()
       await expect(page.getByText('a new blog: New blog by New')).toBeVisible()
@@ -60,6 +49,32 @@ describe('Blog app', () => {
         'color',
         'rgb(0, 128, 0)'
       )
+    })
+
+    describe('and there is at least one blog', () => {
+      beforeEach(async ({ page }) => {
+        await createBlog(page, 'New blog', 'New Author', 'new-blog.com')
+      })
+
+      test('a blog can be liked', async ({ page }) => {
+        await page.getByRole('button', { name: 'view' }).click()
+        await page.getByRole('button', { name: 'like' }).click()
+
+        await expect(page.getByText('Likes: 1')).toBeVisible()
+      })
+
+      test('user who added blog can delete blog', async ({ page }) => {
+        await page.getByRole('button', { name: 'view' }).click()
+        page.on('dialog', (dialog) => dialog.accept())
+        await page.getByRole('button', { name: 'remove' }).click()
+
+        await expect(page.getByText('Title: New blog')).not.toBeVisible()
+        await expect(page.getByText('New blog has been deleted')).toBeVisible()
+        await expect(page.getByText('New blog has been deleted')).toHaveCSS(
+          'color',
+          'rgb(0, 128, 0)'
+        )
+      })
     })
   })
 })
