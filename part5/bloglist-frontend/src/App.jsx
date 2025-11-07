@@ -5,13 +5,16 @@ import blogService from './services/blogs'
 import loginService from './services/login'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
+import { useDispatch } from 'react-redux'
+import { setNotif, resetNotif } from './features/notif/notifSlice'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [notification, setNotification] = useState({ message: null })
+
+  const dispatch = useDispatch()
 
   useEffect(() => {
     blogService.getAll().then((blogs) => {
@@ -29,9 +32,9 @@ const App = () => {
   }, [])
 
   const notifyWith = (message, isError = false) => {
-    setNotification({ message, isError })
+    dispatch(setNotif({ message, isError }))
     setTimeout(() => {
-      setNotification({ message: null })
+      dispatch(resetNotif())
     }, 5000)
   }
 
@@ -84,7 +87,7 @@ const App = () => {
     return (
       <div>
         <h2>Log in to application</h2>
-        <Notification notification={notification} />
+        <Notification/>
         <form>
           <div>
             <label>
@@ -119,7 +122,7 @@ const App = () => {
       ) : (
         <div>
           <h2>blogs</h2>
-          <Notification notification={notification} />
+          <Notification />
           <p>
             {user.name} has logged in{' '}
             <button onClick={handleLogout}>logout</button>
