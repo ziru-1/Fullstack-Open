@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
 import Notification from './components/Notification'
-import blogService from './services/blogs'
 import loginService from './services/login'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { setNotif, resetNotif } from './features/notif/notifSlice'
+import { addBlog, appendBlog, initalizeBlogs, setBlogs } from './features/blog/blogSlice'
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
@@ -17,11 +16,10 @@ const App = () => {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    blogService.getAll().then((blogs) => {
-      const sortedBlogs = [...blogs].sort((a, b) => b.likes - a.likes)
-      setBlogs(sortedBlogs)
-    })
-  }, [])
+    dispatch(initalizeBlogs())
+  }, [dispatch])
+
+  const blogs = useSelector((state) => state.blogs)
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
@@ -59,9 +57,8 @@ const App = () => {
 
   const handleAddBlog = async (blogDetails) => {
     try {
-      const addedBlog = await blogService.addBlog(blogDetails, user.token)
-      setBlogs((prevBlogs) => [...prevBlogs, addedBlog])
-      notifyWith(`a new blog: ${addedBlog.title} by ${addedBlog.author} added`)
+      dispatch(appendBlog(blogDetails, user))
+      notifyWith(`a new blog: ${blogDetails.title} by ${blogDetails.author} added`)
     } catch {
       notifyWith('title and url required', true)
     }
@@ -77,9 +74,7 @@ const App = () => {
   const handleDeleteBlog = async (id) => {
     const deletedBlog = blogs.find((blog) => blog.id === id)
     await blogService.deleteBlog(id, user.token)
-    setBlogs((prevBlogs) =>
-      prevBlogs.filter((blog) => blog.id !== id)
-    )
+    setBlogs((prevBlogs) => prevBlogs.filter((blog) => blog.id !== id))
     notifyWith(`${deletedBlog.title} has been deleted`)
   }
 
@@ -87,7 +82,7 @@ const App = () => {
     return (
       <div>
         <h2>Log in to application</h2>
-        <Notification/>
+        <Notification />
         <form>
           <div>
             <label>
