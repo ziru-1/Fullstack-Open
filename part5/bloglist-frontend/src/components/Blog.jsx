@@ -21,7 +21,7 @@ const Blog = ({ blog, user, handleLikeUpdate, handleDeleteBlog }) => {
     )
     if (!confirmed) return
 
-    handleDeleteBlog(blog.id)
+    handleDeleteBlog(blog.id, blog.title)
   }
 
   const toggleShowDetails = () => {

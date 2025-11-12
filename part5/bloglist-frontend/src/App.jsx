@@ -6,7 +6,7 @@ import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import { useDispatch, useSelector } from 'react-redux'
 import { setNotif, resetNotif } from './features/notif/notifSlice'
-import { addBlog, appendBlog, initalizeBlogs, setBlogs } from './features/blog/blogSlice'
+import { appendBlog, editBlog, initalizeBlogs, removeBlog } from './features/blog/blogSlice'
 
 const App = () => {
   const [username, setUsername] = useState('')
@@ -65,17 +65,12 @@ const App = () => {
   }
 
   const handleLikeUpdate = async (blog) => {
-    const updatedBlog = await blogService.updateBlogLike(blog.id, blog.likes)
-    setBlogs((prevBlogs) =>
-      prevBlogs.map((blog) => (blog.id === updatedBlog.id ? updatedBlog : blog))
-    )
+    dispatch(editBlog(blog))
   }
 
-  const handleDeleteBlog = async (id) => {
-    const deletedBlog = blogs.find((blog) => blog.id === id)
-    await blogService.deleteBlog(id, user.token)
-    setBlogs((prevBlogs) => prevBlogs.filter((blog) => blog.id !== id))
-    notifyWith(`${deletedBlog.title} has been deleted`)
+  const handleDeleteBlog = async (id, deletedBlogTitle) => {
+    dispatch(removeBlog(id, user))
+    notifyWith(`${deletedBlogTitle} has been deleted`)
   }
 
   const loginForm = () => {
