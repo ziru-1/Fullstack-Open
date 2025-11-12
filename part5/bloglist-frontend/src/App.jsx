@@ -5,7 +5,12 @@ import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import { useDispatch, useSelector } from 'react-redux'
 import { setNotif, resetNotif } from './features/notif/notifSlice'
-import { appendBlog, editBlog, initalizeBlogs, removeBlog } from './features/blog/blogSlice'
+import {
+  appendBlog,
+  editBlog,
+  initalizeBlogs,
+  removeBlog,
+} from './features/blog/blogSlice'
 import { loginUser, setUser } from './features/user/userSlice'
 
 const App = () => {
@@ -16,6 +21,17 @@ const App = () => {
 
   const blogs = useSelector((state) => state.blogs)
   const user = useSelector((state) => state.user)
+
+  const userBlogCount = Object.values(
+    blogs.reduce((acc, item) => {
+      const username = item.user.username
+      if (!acc[username]) {
+        acc[username] = { username, count: 0 }
+      }
+      acc[username].count += 1
+      return acc
+    }, {})
+  ).sort((a, b) => b.count - a.count)
 
   useEffect(() => {
     dispatch(initalizeBlogs())
@@ -57,7 +73,9 @@ const App = () => {
   const handleAddBlog = async (blogDetails) => {
     try {
       dispatch(appendBlog(blogDetails, user))
-      notifyWith(`a new blog: ${blogDetails.title} by ${blogDetails.author} added`)
+      notifyWith(
+        `a new blog: ${blogDetails.title} by ${blogDetails.author} added`
+      )
     } catch {
       notifyWith('title and url required', true)
     }
@@ -106,30 +124,51 @@ const App = () => {
 
   return (
     <div>
-      {!user ? (
-        loginForm()
-      ) : (
-        <div>
-          <h2>blogs</h2>
-          <Notification />
-          <p>
-            {user.name} has logged in{' '}
-            <button onClick={handleLogout}>logout</button>
-          </p>
-          <Togglable buttonName="Create new blog">
-            <BlogForm handleAddBlog={handleAddBlog} />
-          </Togglable>
-          {blogs.map((blog) => (
-            <Blog
-              key={blog.id}
-              blog={blog}
-              user={user}
-              handleLikeUpdate={handleLikeUpdate}
-              handleDeleteBlog={handleDeleteBlog}
-            />
-          ))}
-        </div>
-      )}
+      <div>
+        {!user ? (
+          loginForm()
+        ) : (
+          <div>
+            <h2>blogs</h2>
+            <Notification />
+            <p>
+              {user.name} has logged in{' '}
+              <button onClick={handleLogout}>logout</button>
+            </p>
+            <Togglable buttonName="Create new blog">
+              <BlogForm handleAddBlog={handleAddBlog} />
+            </Togglable>
+            {blogs.map((blog) => (
+              <Blog
+                key={blog.id}
+                blog={blog}
+                user={user}
+                handleLikeUpdate={handleLikeUpdate}
+                handleDeleteBlog={handleDeleteBlog}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+      <h2>Users</h2>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>blogs created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            userBlogCount.map((user) => (
+              <tr key={user.username}>
+                <td>{user.username}</td>
+                <td>{user.count}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
     </div>
   )
 }
