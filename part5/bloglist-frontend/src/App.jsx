@@ -1,33 +1,33 @@
 import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
 import Notification from './components/Notification'
-import loginService from './services/login'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import { useDispatch, useSelector } from 'react-redux'
 import { setNotif, resetNotif } from './features/notif/notifSlice'
 import { appendBlog, editBlog, initalizeBlogs, removeBlog } from './features/blog/blogSlice'
+import { loginUser, setUser } from './features/user/userSlice'
 
 const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
 
   const dispatch = useDispatch()
+
+  const blogs = useSelector((state) => state.blogs)
+  const user = useSelector((state) => state.user)
 
   useEffect(() => {
     dispatch(initalizeBlogs())
   }, [dispatch])
 
-  const blogs = useSelector((state) => state.blogs)
-
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
-      setUser(user)
+      dispatch(setUser(user))
     }
-  }, [])
+  }, [dispatch])
 
   const notifyWith = (message, isError = false) => {
     dispatch(setNotif({ message, isError }))
@@ -40,9 +40,8 @@ const App = () => {
     e.preventDefault()
 
     try {
-      const user = await loginService.login({ username, password })
+      dispatch(loginUser(username, password))
       window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user))
-      setUser(user)
       setUsername('')
       setPassword('')
     } catch (error) {
@@ -52,7 +51,7 @@ const App = () => {
 
   const handleLogout = async () => {
     window.localStorage.removeItem('loggedBlogappUser')
-    setUser(null)
+    dispatch(setUser(null))
   }
 
   const handleAddBlog = async (blogDetails) => {
