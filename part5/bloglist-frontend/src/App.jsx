@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react'
-import Blog from './components/Blog'
-import Notification from './components/Notification'
-import Togglable from './components/Togglable'
-import BlogForm from './components/BlogForm'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link, Route, Routes } from 'react-router'
 import { setNotif, resetNotif } from './features/notif/notifSlice'
 import {
   appendBlog,
@@ -12,26 +9,45 @@ import {
   removeBlog,
 } from './features/blog/blogSlice'
 import { loginUser, setUser } from './features/user/userSlice'
+import usersService from './services/users'
+import Blog from './components/Blog'
+import Notification from './components/Notification'
+import Togglable from './components/Togglable'
+import BlogForm from './components/BlogForm'
+import UserBlogs from './components/UserBlogs'
 
 const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [users, setUsers] = useState([])
 
   const dispatch = useDispatch()
 
   const blogs = useSelector((state) => state.blogs)
   const user = useSelector((state) => state.user)
 
-  const userBlogCount = Object.values(
-    blogs.reduce((acc, item) => {
-      const username = item.user.username
-      if (!acc[username]) {
-        acc[username] = { username, count: 0 }
+  const userBlogCount = users
+    .map((user) => {
+      const count = blogs.filter((blog) => blog.user.id === user.id).length
+      return {
+        username: user.username,
+        id: user.id,
+        count,
       }
-      acc[username].count += 1
-      return acc
-    }, {})
-  ).sort((a, b) => b.count - a.count)
+    })
+    .sort((a, b) => b.count - a.count)
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const data = await usersService.getAll()
+        setUsers(data)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    fetchUsers()
+  }, [])
 
   useEffect(() => {
     dispatch(initalizeBlogs())
@@ -150,25 +166,38 @@ const App = () => {
           </div>
         )}
       </div>
-      <h2>Users</h2>
-      <table>
-        <thead>
-          <tr>
-            <th></th>
-            <th>blogs created</th>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            userBlogCount.map((user) => (
-              <tr key={user.username}>
-                <td>{user.username}</td>
-                <td>{user.count}</td>
-              </tr>
-            ))
+
+      <Routes>
+        <Route
+          path="/users"
+          element={
+            <>
+              <div>
+                <h2>Users</h2>
+                <table>
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>blogs created</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {userBlogCount.map((user) => (
+                      <tr key={user.username}>
+                        <td>
+                          <Link to={`/users/${user.id}`}>{user.username}</Link>
+                        </td>
+                        <td>{user.count}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           }
-        </tbody>
-      </table>
+        />
+        <Route path="/users/:id" element={<UserBlogs blogs={blogs} />} />
+      </Routes>
     </div>
   )
 }
