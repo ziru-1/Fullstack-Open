@@ -26,22 +26,12 @@ const App = () => {
   const blogs = useSelector((state) => state.blogs)
   const user = useSelector((state) => state.user)
 
-  const userBlogCount = users
-    .map((user) => {
-      const count = blogs.filter((blog) => blog.user.id === user.id).length
-      return {
-        username: user.username,
-        id: user.id,
-        count,
-      }
-    })
-    .sort((a, b) => b.count - a.count)
-
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const data = await usersService.getAll()
-        setUsers(data)
+        const sortedData = data.sort((a,b) => b.blogs.length - a.blogs.length)
+        setUsers(sortedData)
       } catch (error) {
         console.error(error)
       }
@@ -182,12 +172,12 @@ const App = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {userBlogCount.map((user) => (
+                    {users.map((user) => (
                       <tr key={user.username}>
                         <td>
-                          <Link to={`/users/${user.id}`}>{user.username}</Link>
+                          <Link to={`/users/${user.id}`}>{user.name}</Link>
                         </td>
-                        <td>{user.count}</td>
+                        <td>{user.blogs.length}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -196,7 +186,7 @@ const App = () => {
             </>
           }
         />
-        <Route path="/users/:id" element={<UserBlogs blogs={blogs} />} />
+        <Route path="/users/:id" element={<UserBlogs users={users} />} />
       </Routes>
     </div>
   )
