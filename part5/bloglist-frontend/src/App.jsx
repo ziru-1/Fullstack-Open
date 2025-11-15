@@ -4,17 +4,16 @@ import { Link, Route, Routes } from 'react-router'
 import { setNotif, resetNotif } from './features/notif/notifSlice'
 import {
   appendBlog,
-  editBlog,
   initalizeBlogs,
-  removeBlog,
 } from './features/blog/blogSlice'
 import { loginUser, setUser } from './features/user/userSlice'
 import usersService from './services/users'
-import Blog from './components/Blog'
+import Blogs from './components/Blogs'
 import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import UserBlogs from './components/UserBlogs'
+import BlogDetails from './components/BlogDetails'
 
 const App = () => {
   const [username, setUsername] = useState('')
@@ -23,14 +22,13 @@ const App = () => {
 
   const dispatch = useDispatch()
 
-  const blogs = useSelector((state) => state.blogs)
   const user = useSelector((state) => state.user)
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const data = await usersService.getAll()
-        const sortedData = data.sort((a,b) => b.blogs.length - a.blogs.length)
+        const sortedData = data.sort((a, b) => b.blogs.length - a.blogs.length)
         setUsers(sortedData)
       } catch (error) {
         console.error(error)
@@ -63,7 +61,6 @@ const App = () => {
 
     try {
       dispatch(loginUser(username, password))
-      window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user))
       setUsername('')
       setPassword('')
     } catch (error) {
@@ -85,15 +82,6 @@ const App = () => {
     } catch {
       notifyWith('title and url required', true)
     }
-  }
-
-  const handleLikeUpdate = async (blog) => {
-    dispatch(editBlog(blog))
-  }
-
-  const handleDeleteBlog = async (id, deletedBlogTitle) => {
-    dispatch(removeBlog(id, user))
-    notifyWith(`${deletedBlogTitle} has been deleted`)
   }
 
   const loginForm = () => {
@@ -144,15 +132,6 @@ const App = () => {
             <Togglable buttonName="Create new blog">
               <BlogForm handleAddBlog={handleAddBlog} />
             </Togglable>
-            {blogs.map((blog) => (
-              <Blog
-                key={blog.id}
-                blog={blog}
-                user={user}
-                handleLikeUpdate={handleLikeUpdate}
-                handleDeleteBlog={handleDeleteBlog}
-              />
-            ))}
           </div>
         )}
       </div>
@@ -187,6 +166,8 @@ const App = () => {
           }
         />
         <Route path="/users/:id" element={<UserBlogs users={users} />} />
+        <Route path="/" element={<Blogs />} />
+        <Route path="/blogs/:id" element={<BlogDetails />} />
       </Routes>
     </div>
   )

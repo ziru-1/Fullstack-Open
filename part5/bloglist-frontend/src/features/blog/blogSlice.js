@@ -37,7 +37,7 @@ export const appendBlog = (blogDetails, user) => {
   }
 }
 
-export const editBlog = (blog) => {
+export const incrementBlogLike = (blog) => {
   return async (dispatch) => {
     const updatedBlog = await blogService.updateBlogLike(blog.id, blog.likes)
     dispatch(updateBlog(updatedBlog))
