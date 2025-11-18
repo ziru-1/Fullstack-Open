@@ -2,10 +2,7 @@ import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, Route, Routes } from 'react-router'
 import { setNotif, resetNotif } from './features/notif/notifSlice'
-import {
-  appendBlog,
-  initalizeBlogs,
-} from './features/blog/blogSlice'
+import { appendBlog, initalizeBlogs } from './features/blog/blogSlice'
 import { loginUser, setUser } from './features/user/userSlice'
 import usersService from './services/users'
 import Blogs from './components/Blogs'
@@ -119,16 +116,20 @@ const App = () => {
   return (
     <div>
       <div>
+        <p style={{backgroundColor:'lightgray', padding: '10px' }}>
+          <Link to='/'>blogs</Link>&nbsp;
+          <Link to='/users'>users</Link>&nbsp;
+          {user?.name} has logged in&nbsp;
+          <button onClick={handleLogout}>logout</button>
+        </p>
+      </div>
+      <div>
         {!user ? (
           loginForm()
         ) : (
           <div>
             <h2>blogs</h2>
             <Notification />
-            <p>
-              {user.name} has logged in{' '}
-              <button onClick={handleLogout}>logout</button>
-            </p>
             <Togglable buttonName="Create new blog">
               <BlogForm handleAddBlog={handleAddBlog} />
             </Togglable>
