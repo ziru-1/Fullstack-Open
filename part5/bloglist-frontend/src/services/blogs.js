@@ -15,6 +15,14 @@ const addBlog = async (blogDetails, token) => {
   return response.data
 }
 
+const addComment = async (blogId, comment) => {
+  const response = await axios.post(`${baseUrl}/${blogId}/comments`, {
+    comment,
+  })
+  console.log('response', response)
+  return response.data
+}
+
 const updateBlogLike = async (id, currentLikes) => {
   const response = await axios.put(`${baseUrl}/${id}`, {
     likes: currentLikes + 1,
@@ -30,4 +38,4 @@ const deleteBlog = async (id, token) => {
   })
 }
 
-export default { getAll, addBlog, updateBlogLike, deleteBlog }
+export default { getAll, addBlog, addComment, updateBlogLike, deleteBlog }

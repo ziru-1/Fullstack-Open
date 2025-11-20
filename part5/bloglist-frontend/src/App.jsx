@@ -116,7 +116,7 @@ const App = () => {
   return (
     <div>
       <div>
-        <p style={{backgroundColor:'lightgray', padding: '10px' }}>
+        <p style={{ backgroundColor:'lightgray', padding: '10px' }}>
           <Link to='/'>blogs</Link>&nbsp;
           <Link to='/users'>users</Link>&nbsp;
           {user?.name} has logged in&nbsp;

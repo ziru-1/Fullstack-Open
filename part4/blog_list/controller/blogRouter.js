@@ -28,6 +28,26 @@ blogRouter.post('/', userExtractor, async (request, response) => {
   response.status(201).json(populatedBlog)
 })
 
+blogRouter.post('/:id/comments', async (request, response) => {
+  const { comment } = request.body
+
+  if (!comment || comment.trim() === '') {
+    return response.status(400).json({ error: 'comment is required' })
+  }
+
+  const blog = await Blog.findById(request.params.id)
+
+  if (!blog) {
+    return response.status(404).json({ error: 'blog not found' })
+  }
+
+  blog.comments.push(comment)
+
+  const savedBlog = await blog.save()
+
+  response.status(201).json(savedBlog)
+})
+
 blogRouter.put('/:id', async (request, response) => {
   const updatedBlog = await Blog.findByIdAndUpdate(
     request.params.id,
