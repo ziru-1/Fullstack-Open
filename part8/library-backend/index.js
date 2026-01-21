@@ -128,10 +128,15 @@ const typeDefs = /* GraphQL */ `
       published: Int!
       genres: [String!]!
     ): Book!
+    editAuthor(name: String!, setBornTo: Int!): Author!
   }
 `
 
 const resolvers = {
+  Author: {
+    bookCount: (root) =>
+      books.filter((book) => book.author === root.name).length,
+  },
   Query: {
     bookCount: () => books.length,
     authorCount: () => authors.length,
@@ -152,11 +157,7 @@ const resolvers = {
 
       return filteredBooks
     },
-    allAuthors: () =>
-      authors.map((author) => ({
-        ...author,
-        bookCount: books.filter((book) => book.author === author.name).length,
-      })),
+    allAuthors: () => authors,
   },
   Mutation: {
     addBook: (root, args) => {
@@ -173,6 +174,20 @@ const resolvers = {
 
       books = books.concat(book)
       return book
+    },
+    editAuthor: (root, args) => {
+      const authorToEdit = authors.find((author) => author.name === args.name)
+      if (!authorToEdit) {
+        return null
+      }
+
+      const updatedAuthor = { ...authorToEdit, born: args.setBornTo }
+
+      authors = authors.map((author) =>
+        author.name === args.name ? updatedAuthor : author,
+      )
+
+      return updatedAuthor
     },
   },
 }
