@@ -1,54 +1,54 @@
 interface BodyValues {
-  heightCm: number
-  weightKg: number
+  heightCm: number;
+  weightKg: number;
 }
 
 const parseBmiArguments = (args: string[]): BodyValues => {
-  if (args.length < 4) throw new Error('Not enough arguments')
-  if (args.length > 4) throw new Error('Too many arguments')
+  if (args.length < 4) throw new Error('Not enough arguments');
+  if (args.length > 4) throw new Error('Too many arguments');
 
   if (!isNaN(Number(args[2])) && !isNaN(Number(args[3]))) {
     return {
       heightCm: Number(args[2]),
       weightKg: Number(args[3]),
-    }
+    };
   } else {
-    throw new Error('Provided values were not numbers!')
+    throw new Error('Provided values were not numbers!');
   }
-}
+};
 
 export const calculateBmi = (heightCm: number, weightKg: number): string => {
-  const heightM = heightCm / 100
-  const bmi = weightKg / heightM ** 2
+  const heightM = heightCm / 100;
+  const bmi = weightKg / heightM ** 2;
 
   if (bmi < 16.0) {
-    return 'Underweight (Severe thinness)'
+    return 'Underweight (Severe thinness)';
   } else if (bmi < 17.0) {
-    return 'Underweight (Moderate thinness)'
+    return 'Underweight (Moderate thinness)';
   } else if (bmi < 18.5) {
-    return 'Underweight (Mild thinness)'
+    return 'Underweight (Mild thinness)';
   } else if (bmi < 25.0) {
-    return 'Normal range'
+    return 'Normal range';
   } else if (bmi < 30.0) {
-    return 'Overweight (Pre-obese)'
+    return 'Overweight (Pre-obese)';
   } else if (bmi < 35.0) {
-    return 'Obese (Class I)'
+    return 'Obese (Class I)';
   } else if (bmi < 40.0) {
-    return 'Obese (Class II)'
+    return 'Obese (Class II)';
   } else {
-    return 'Obese (Class III)'
+    return 'Obese (Class III)';
   }
-}
+};
 
 if (require.main === module) {
   try {
-    const { heightCm, weightKg } = parseBmiArguments(process.argv)
-    console.log(calculateBmi(heightCm, weightKg))
+    const { heightCm, weightKg } = parseBmiArguments(process.argv);
+    console.log(calculateBmi(heightCm, weightKg));
   } catch (error: unknown) {
-    let errorMessage = 'Something bad happened.'
+    let errorMessage = 'Something bad happened.';
     if (error instanceof Error) {
-      errorMessage += ' Error: ' + error.message
+      errorMessage += ' Error: ' + error.message;
     }
-    console.log(errorMessage)
+    console.log(errorMessage);
   }
 }
