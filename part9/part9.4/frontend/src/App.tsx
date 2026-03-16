@@ -10,6 +10,8 @@ const App = () => {
   const [weather, setWeather] = useState('')
   const [comment, setComment] = useState('')
 
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
   useEffect(() => {
     const fetchDiaries = async () => {
       try {
@@ -26,19 +28,33 @@ const App = () => {
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault()
 
-    const newEntry = await createDiary({
-      date,
-      visibility: visibility as Visibility,
-      weather: weather as Weather,
-      comment,
-    })
+    try {
+      const newEntry = await createDiary({
+        date,
+        visibility: visibility as Visibility,
+        weather: weather as Weather,
+        comment,
+      })
 
-    setDiaries(diaries.concat(newEntry))
+      setDiaries(diaries.concat(newEntry))
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+      } else {
+        setErrorMessage('Something went wrong')
+      }
+
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 5000)
+    }
   }
 
   return (
     <div>
       <h2>Add new entry</h2>
+
+      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
 
       <form onSubmit={handleSubmit}>
         <div>
