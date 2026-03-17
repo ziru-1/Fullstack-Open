@@ -1,13 +1,39 @@
 import { useEffect, useState } from 'react'
 import { createDiary, getAllDiaries } from './services/diaryService'
-import type { DiaryEntry, Visibility, Weather } from './types'
+import type { DiaryEntry } from './types'
+import { Visibility, Weather } from './types'
+
+type VisibilityOptions = {
+  label: string
+  value: Visibility
+}
+
+type WeatherOptions = {
+  label: string
+  value: Weather
+}
+
+const visibilityOptions: VisibilityOptions[] = [
+  { label: 'great', value: Visibility.Great },
+  { label: 'good', value: Visibility.Good },
+  { label: 'ok', value: Visibility.Ok },
+  { label: 'poor', value: Visibility.Poor },
+]
+
+const weatherOptions: WeatherOptions[] = [
+  { label: 'sunny', value: Weather.Sunny },
+  { label: 'rainy', value: Weather.Rainy },
+  { label: 'cloudy', value: Weather.Cloudy },
+  { label: 'stormy', value: Weather.Stormy },
+  { label: 'windy', value: Weather.Windy },
+]
 
 const App = () => {
   const [diaries, setDiaries] = useState<DiaryEntry[]>([])
 
   const [date, setDate] = useState('')
-  const [visibility, setVisibility] = useState('')
-  const [weather, setWeather] = useState('')
+  const [visibility, setVisibility] = useState<Visibility | ''>('')
+  const [weather, setWeather] = useState<Weather | ''>('')
   const [comment, setComment] = useState('')
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -28,11 +54,16 @@ const App = () => {
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault()
 
+    if (!visibility || !weather) {
+      setErrorMessage('Please select visibility and weather')
+      return
+    }
+
     try {
       const newEntry = await createDiary({
         date,
-        visibility: visibility as Visibility,
-        weather: weather as Weather,
+        visibility: visibility,
+        weather: weather,
         comment,
       })
 
@@ -60,7 +91,7 @@ const App = () => {
         <div>
           date
           <input
-            type='text'
+            type='date'
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
@@ -68,20 +99,34 @@ const App = () => {
 
         <div>
           visibility
-          <input
-            type='text'
-            value={visibility}
-            onChange={(e) => setVisibility(e.target.value)}
-          />
+          {visibilityOptions.map((opt) => (
+            <label key={opt.value}>
+              <input
+                type='radio'
+                name='visibility'
+                value={opt.value}
+                checked={visibility === opt.value}
+                onChange={() => setVisibility(opt.value)}
+              />
+              {opt.label}
+            </label>
+          ))}
         </div>
 
         <div>
           weather
-          <input
-            type='text'
-            value={weather}
-            onChange={(e) => setWeather(e.target.value)}
-          />
+          {weatherOptions.map((opt) => (
+            <label key={opt.value}>
+              <input
+                type='radio'
+                name='weather'
+                value={opt.value}
+                checked={weather === opt.value}
+                onChange={() => setWeather(opt.value)}
+              />
+              {opt.label}
+            </label>
+          ))}
         </div>
 
         <div>
