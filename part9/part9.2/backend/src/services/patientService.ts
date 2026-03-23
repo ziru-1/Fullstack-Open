@@ -9,6 +9,10 @@ const getPatients = (): PublicPatient[] => {
   return patients.map(({ ssn, ...rest }) => rest);
 };
 
+const getPatientById = (id: string): Patient | undefined => {
+  return patients.find((patient) => patient.id === id);
+};
+
 const addPatient = (entry: NewPatientEntry): Patient => {
   const newPatientEntry = {
     id: uuid(),
@@ -21,5 +25,6 @@ const addPatient = (entry: NewPatientEntry): Patient => {
 
 export default {
   getPatients,
+  getPatientById,
   addPatient,
 };
