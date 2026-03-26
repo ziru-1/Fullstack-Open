@@ -2,6 +2,7 @@ import { Box, List, ListItem, Typography } from '@mui/material';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import WorkIcon from '@mui/icons-material/Work';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import { Entry } from '../../types';
 import { assertNever } from '../../utils';
 
@@ -18,15 +19,9 @@ const EntryDetails = ({ entry, getDiagnosisName }: Props) => {
     marginTop: '10px',
   };
 
-  const getHealtCheckRatingIcon = (rating: number): string => {
-    switch (rating) {
-      case 0:
-        return '💚';
-      case 1:
-        return '💛';
-      default:
-        return '❓';
-    }
+  const renderHealthRating = (rating: number) => {
+    const colors = ['green', 'yellow', 'orange', 'red'];
+    return <FavoriteIcon style={{ color: colors[rating] }} />;
   };
 
   switch (entry.type) {
@@ -71,9 +66,20 @@ const EntryDetails = ({ entry, getDiagnosisName }: Props) => {
           <Typography>
             <em>{entry.description}</em>
           </Typography>
-          <Typography>
-            {getHealtCheckRatingIcon(entry.healthCheckRating)}
-          </Typography>
+
+          {entry.diagnosisCodes && entry.diagnosisCodes.length > 0 && (
+            <List sx={{ listStyleType: 'disc', pl: 4 }}>
+              {entry.diagnosisCodes.map((code) => (
+                <ListItem key={code} sx={{ display: 'list-item', py: 0 }}>
+                  <Typography variant='body2'>
+                    {code} {getDiagnosisName(code)}
+                  </Typography>
+                </ListItem>
+              ))}
+            </List>
+          )}
+
+          <Typography>{renderHealthRating(entry.healthCheckRating)}</Typography>
           <Typography>diagnose by: {entry.specialist}</Typography>
         </Box>
       );
@@ -86,6 +92,19 @@ const EntryDetails = ({ entry, getDiagnosisName }: Props) => {
           <Typography>
             <em>{entry.description}</em>
           </Typography>
+
+          {entry.diagnosisCodes && entry.diagnosisCodes.length > 0 && (
+            <List sx={{ listStyleType: 'disc', pl: 4 }}>
+              {entry.diagnosisCodes.map((code) => (
+                <ListItem key={code} sx={{ display: 'list-item', py: 0 }}>
+                  <Typography variant='body2'>
+                    {code} {getDiagnosisName(code)}
+                  </Typography>
+                </ListItem>
+              ))}
+            </List>
+          )}
+
           <Typography>diagnose by: {entry.specialist}</Typography>
         </Box>
       );
