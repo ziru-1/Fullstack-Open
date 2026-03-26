@@ -12,9 +12,13 @@ import {
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import patientService from '../../services/patients';
-import { Gender, Patient } from '../../types';
+import { Gender, Patient, Diagnosis } from '../../types';
 
-const PatientPage = () => {
+interface Props {
+  diagnoses: Diagnosis[];
+}
+
+const PatientPage = ({ diagnoses }: Props) => {
   const { id } = useParams<{ id: string }>();
   const [patient, setPatient] = useState<Patient | null>(null);
 
@@ -23,6 +27,11 @@ const PatientPage = () => {
       patientService.getPatientData(id).then((data) => setPatient(data));
     }
   }, [id]);
+
+  const getDiagnosisName = (code: string): string => {
+    const diagnosis = diagnoses.find((d) => d.code === code);
+    return diagnosis ? diagnosis.name : '';
+  };
 
   if (!patient) {
     return <div>Loading...</div>;
@@ -53,7 +62,9 @@ const PatientPage = () => {
               <List sx={{ listStyleType: 'disc', pl: 4 }}>
                 {entry.diagnosisCodes.map((code) => (
                   <ListItem key={code} sx={{ display: 'list-item', py: 0 }}>
-                    <Typography variant='body2'>{code}</Typography>
+                    <Typography variant='body2'>
+                      {code} {getDiagnosisName(code)}
+                    </Typography>
                   </ListItem>
                 ))}
               </List>
