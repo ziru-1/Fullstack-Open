@@ -7,6 +7,7 @@ import { useParams } from 'react-router-dom';
 import patientService from '../../services/patients';
 import { Diagnosis, Gender, Patient } from '../../types';
 import EntryDetails from './EntryDetails';
+import AddEntryForm, { NewHealthCheckEntry } from './AddEntryForm';
 
 interface Props {
   diagnoses: Diagnosis[];
@@ -25,6 +26,14 @@ const PatientPage = ({ diagnoses }: Props) => {
   const getDiagnosisName = (code: string): string => {
     const diagnosis = diagnoses.find((d) => d.code === code);
     return diagnosis ? diagnosis.name : '';
+  };
+
+  const handleAddEntry = async (entry: NewHealthCheckEntry) => {
+    if (!id) return;
+    const newEntry = await patientService.addEntry(id, entry);
+    setPatient((prev) =>
+      prev ? { ...prev, entries: prev.entries.concat(newEntry) } : prev,
+    );
   };
 
   if (!patient) {
@@ -46,7 +55,9 @@ const PatientPage = ({ diagnoses }: Props) => {
         </Typography>
         <Typography>SSN: {patient.ssn}</Typography>
         <Typography>Occupation: {patient.occupation}</Typography>
-        <Typography variant='h5'>entries</Typography>
+        <Typography variant='h5' sx={{ mt: 2 }}>
+          entries
+        </Typography>
         {patient.entries.map((entry) => (
           <EntryDetails
             key={entry.id}
@@ -54,6 +65,7 @@ const PatientPage = ({ diagnoses }: Props) => {
             getDiagnosisName={getDiagnosisName}
           />
         ))}
+        <AddEntryForm onSubmit={handleAddEntry} />
       </CardContent>
     </Card>
   );
