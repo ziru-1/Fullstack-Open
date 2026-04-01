@@ -105,6 +105,12 @@ const EntryDetails = ({ entry, getDiagnosisName }: Props) => {
             </List>
           )}
 
+          {entry.sickLeave && (
+            <Typography>
+              sick leave: {entry.sickLeave?.startDate} -{' '}
+              {entry.sickLeave?.endDate}
+            </Typography>
+          )}
           <Typography>diagnose by: {entry.specialist}</Typography>
         </Box>
       );

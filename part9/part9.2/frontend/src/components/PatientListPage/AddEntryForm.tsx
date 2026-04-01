@@ -11,6 +11,8 @@ import {
 import { useState } from 'react';
 import { HealthCheckRating } from '../../types';
 
+// ── New entry payload types (no id) ──────────────────────────────────────────
+
 export interface NewHealthCheckEntry {
   type: 'HealthCheck';
   description: string;
@@ -20,28 +22,76 @@ export interface NewHealthCheckEntry {
   diagnosisCodes?: string[];
 }
 
-interface Props {
-  onSubmit: (entry: NewHealthCheckEntry) => Promise<void>;
+export interface NewHospitalEntry {
+  type: 'Hospital';
+  description: string;
+  date: string;
+  specialist: string;
+  discharge: { date: string; criteria: string };
+  diagnosisCodes?: string[];
 }
+
+export interface NewOccupationalHealthcareEntry {
+  type: 'OccupationalHealthcare';
+  description: string;
+  date: string;
+  specialist: string;
+  employerName: string;
+  sickLeave?: { startDate: string; endDate: string };
+  diagnosisCodes?: string[];
+}
+
+export type NewEntry =
+  | NewHealthCheckEntry
+  | NewHospitalEntry
+  | NewOccupationalHealthcareEntry;
+
+type EntryType = NewEntry['type'];
+
+// ── Props ─────────────────────────────────────────────────────────────────────
+
+interface Props {
+  onSubmit: (entry: NewEntry) => Promise<void>;
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 const AddEntryForm = ({ onSubmit }: Props) => {
   const [visible, setVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // shared fields
+  const [entryType, setEntryType] = useState<EntryType>('HealthCheck');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
   const [specialist, setSpecialist] = useState('');
+  const [diagnosisCodes, setDiagnosisCodes] = useState('');
+
+  // HealthCheck
   const [healthCheckRating, setHealthCheckRating] = useState<HealthCheckRating>(
     HealthCheckRating.Healthy,
   );
-  const [diagnosisCodes, setDiagnosisCodes] = useState('');
+
+  // Hospital
+  const [dischargeDate, setDischargeDate] = useState('');
+  const [dischargeCriteria, setDischargeCriteria] = useState('');
+
+  // OccupationalHealthcare
+  const [employerName, setEmployerName] = useState('');
+  const [sickLeaveStart, setSickLeaveStart] = useState('');
+  const [sickLeaveEnd, setSickLeaveEnd] = useState('');
 
   const resetForm = () => {
     setDescription('');
     setDate('');
     setSpecialist('');
-    setHealthCheckRating(HealthCheckRating.Healthy);
     setDiagnosisCodes('');
+    setHealthCheckRating(HealthCheckRating.Healthy);
+    setDischargeDate('');
+    setDischargeCriteria('');
+    setEmployerName('');
+    setSickLeaveStart('');
+    setSickLeaveEnd('');
     setError(null);
   };
 
@@ -50,26 +100,53 @@ const AddEntryForm = ({ onSubmit }: Props) => {
     setVisible(false);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const parsedCodes = (): string[] | undefined => {
+    const codes = diagnosisCodes
+      .split(',')
+      .map((c) => c.trim())
+      .filter(Boolean);
+    return codes.length > 0 ? codes : undefined;
+  };
 
-    const entry: NewHealthCheckEntry = {
-      type: 'HealthCheck',
+  const buildEntry = (): NewEntry => {
+    const base = {
       description,
       date,
       specialist,
-      healthCheckRating,
-      diagnosisCodes: diagnosisCodes
-        ? diagnosisCodes
-            .split(',')
-            .map((c) => c.trim())
-            .filter(Boolean)
-        : undefined,
+      diagnosisCodes: parsedCodes(),
     };
 
+    switch (entryType) {
+      case 'HealthCheck':
+        return { ...base, type: 'HealthCheck', healthCheckRating };
+
+      case 'Hospital':
+        return {
+          ...base,
+          type: 'Hospital',
+          discharge: { date: dischargeDate, criteria: dischargeCriteria },
+        };
+
+      case 'OccupationalHealthcare': {
+        const sickLeave =
+          sickLeaveStart && sickLeaveEnd
+            ? { startDate: sickLeaveStart, endDate: sickLeaveEnd }
+            : undefined;
+        return {
+          ...base,
+          type: 'OccupationalHealthcare',
+          employerName,
+          sickLeave,
+        };
+      }
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
     try {
-      await onSubmit(entry);
+      await onSubmit(buildEntry());
       resetForm();
       setVisible(false);
     } catch (err: unknown) {
@@ -91,7 +168,11 @@ const AddEntryForm = ({ onSubmit }: Props) => {
 
   if (!visible) {
     return (
-      <Button variant='contained' onClick={() => setVisible(true)}>
+      <Button
+        variant='contained'
+        sx={{ mt: 2 }}
+        onClick={() => setVisible(true)}
+      >
         Add New Entry
       </Button>
     );
@@ -111,10 +192,33 @@ const AddEntryForm = ({ onSubmit }: Props) => {
         gap: 1.5,
       }}
     >
-      <Typography variant='h6'>New HealthCheck Entry</Typography>
+      <Typography variant='h6'>New Entry</Typography>
 
       {error && <Alert severity='error'>{error}</Alert>}
 
+      {/* ── Entry type selector ── */}
+      <Box>
+        <Typography variant='body2' gutterBottom>
+          Entry Type
+        </Typography>
+        <Select
+          value={entryType}
+          onChange={(e: SelectChangeEvent) => {
+            setEntryType(e.target.value as EntryType);
+            setError(null);
+          }}
+          fullWidth
+          size='small'
+        >
+          <MenuItem value='HealthCheck'>Health Check</MenuItem>
+          <MenuItem value='Hospital'>Hospital</MenuItem>
+          <MenuItem value='OccupationalHealthcare'>
+            Occupational Healthcare
+          </MenuItem>
+        </Select>
+      </Box>
+
+      {/* ── Shared fields ── */}
       <TextField
         label='Description'
         value={description}
@@ -150,33 +254,94 @@ const AddEntryForm = ({ onSubmit }: Props) => {
         placeholder='e.g. J06.9, M24.2'
       />
 
-      <Box>
-        <Typography variant='body2' gutterBottom>
-          Health Check Rating
-        </Typography>
-        <Select
-          value={String(healthCheckRating)}
-          onChange={(e: SelectChangeEvent) =>
-            setHealthCheckRating(Number(e.target.value) as HealthCheckRating)
-          }
-          fullWidth
-          size='small'
-        >
-          <MenuItem value={String(HealthCheckRating.Healthy)}>
-            0 — Healthy
-          </MenuItem>
-          <MenuItem value={String(HealthCheckRating.LowRisk)}>
-            1 — Low Risk
-          </MenuItem>
-          <MenuItem value={String(HealthCheckRating.HighRisk)}>
-            2 — High Risk
-          </MenuItem>
-          <MenuItem value={String(HealthCheckRating.CriticalRisk)}>
-            3 — Critical Risk
-          </MenuItem>
-        </Select>
-      </Box>
+      {/* ── HealthCheck fields ── */}
+      {entryType === 'HealthCheck' && (
+        <Box>
+          <Typography variant='body2' gutterBottom>
+            Health Check Rating
+          </Typography>
+          <Select
+            value={String(healthCheckRating)}
+            onChange={(e: SelectChangeEvent) =>
+              setHealthCheckRating(Number(e.target.value) as HealthCheckRating)
+            }
+            fullWidth
+            size='small'
+          >
+            <MenuItem value={String(HealthCheckRating.Healthy)}>
+              0 — Healthy
+            </MenuItem>
+            <MenuItem value={String(HealthCheckRating.LowRisk)}>
+              1 — Low Risk
+            </MenuItem>
+            <MenuItem value={String(HealthCheckRating.HighRisk)}>
+              2 — High Risk
+            </MenuItem>
+            <MenuItem value={String(HealthCheckRating.CriticalRisk)}>
+              3 — Critical Risk
+            </MenuItem>
+          </Select>
+        </Box>
+      )}
 
+      {/* ── Hospital fields ── */}
+      {entryType === 'Hospital' && (
+        <>
+          <TextField
+            label='Discharge Date'
+            type='date'
+            value={dischargeDate}
+            onChange={(e) => setDischargeDate(e.target.value)}
+            required
+            fullWidth
+            size='small'
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            label='Discharge Criteria'
+            value={dischargeCriteria}
+            onChange={(e) => setDischargeCriteria(e.target.value)}
+            required
+            fullWidth
+            size='small'
+          />
+        </>
+      )}
+
+      {/* ── OccupationalHealthcare fields ── */}
+      {entryType === 'OccupationalHealthcare' && (
+        <>
+          <TextField
+            label='Employer Name'
+            value={employerName}
+            onChange={(e) => setEmployerName(e.target.value)}
+            required
+            fullWidth
+            size='small'
+          />
+          <Typography variant='body2'>Sick Leave (optional)</Typography>
+          <TextField
+            label='Sick Leave Start'
+            type='date'
+            value={sickLeaveStart}
+            onChange={(e) => setSickLeaveStart(e.target.value)}
+            fullWidth
+            size='small'
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            label='Sick Leave End'
+            type='date'
+            value={sickLeaveEnd}
+            onChange={(e) => setSickLeaveEnd(e.target.value)}
+            fullWidth
+            size='small'
+            InputLabelProps={{ shrink: true }}
+          />
+        </>
+      )}
+
+      {/* ── Actions ── */}
       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
         <Button variant='outlined' color='error' onClick={handleCancel}>
           Cancel
